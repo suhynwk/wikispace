@@ -1,432 +1,790 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <title>공간 - Infinite Wikipedia</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>공간 - 위키백과 (Infinite Space)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-        /* --- 1. 위키백과(Vector 2022) 스타일 복제 --- */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Linux+Libertine:wght@400;700&display=swap');
+      /* --- 1. 기본 설정 --- */
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Linux+Libertine:wght@400;700&display=swap");
 
-        :root {
-            --sidebar-width: 176px;
-            --content-width: 960px;
-            --bg-color: #ffffff;
-            --border-color: #a2a9b1;
-            --link-color: #3366cc;
-            --text-color: #202122;
-        }
+      :root {
+        --bg-color: #ffffff;
+        --header-height: 60px;
+        --sidebar-width: 176px;
+        --tools-width: 64px;
+        --border-color: #a2a9b1;
+        --link-color: #3366cc;
+        --text-color: #202122;
+        --gray-bg: #f8f9fa;
+      }
 
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            background: var(--bg-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            color: var(--text-color);
-            overflow-x: hidden;
-        }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        color: var(--text-color);
+        background-color: var(--bg-color);
+        overflow-x: hidden;
+      }
 
-        /* --- 2. 왼쪽 고정 사이드바 --- */
-        .vector-sidebar {
-            position: fixed;
-            top: 0; left: 0;
-            width: var(--sidebar-width);
-            height: 100vh;
-            background: #f8f9fa;
-            padding: 20px 16px;
-            box-sizing: border-box;
-            z-index: 999;
-        }
+      a {
+        color: var(--link-color);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
 
-        .wiki-logo {
-            display: block;
-            width: 100%; height: 160px;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg') no-repeat center top;
-            background-size: 135px auto;
-            margin-bottom: 20px;
-            opacity: 0.9;
-        }
+      /* --- 2. 레이아웃 --- */
 
-        .nav-item {
-            color: var(--link-color);
-            padding: 6px 0;
-            font-size: 0.875rem;
-            cursor: pointer;
-            text-decoration: none; display: block;
-        }
-        .nav-item:hover { text-decoration: underline; }
-        .nav-title {
-            margin-top: 15px; padding-top: 10px;
-            border-top: 1px solid #eaecf0;
-            font-weight: bold; color: #54595d; font-size: 0.75rem;
-        }
+      .wiki-header {
+        height: var(--header-height);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        background: white;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 2000;
+        box-sizing: border-box;
+        transition: transform 0.5s ease;
+      }
 
-        /* --- 3. 메인 컨텐츠 영역 (초기화면) --- */
-        #static-content {
-            margin-left: var(--sidebar-width);
-            padding: 30px 40px;
-            max-width: var(--content-width);
-        }
+      .hb-menu {
+        width: 20px;
+        height: 20px;
+        margin-right: 20px;
+        background: #000;
+        -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>')
+          no-repeat center;
+        cursor: pointer;
+      }
+      .wiki-logo {
+        width: 150px;
+        height: 50px;
+        background: url("https://upload.wikimedia.org/wikipedia/commons/7/77/Wikipedia_svg_logo.svg")
+          no-repeat left center;
+        background-size: contain;
+        margin-right: 30px;
+        opacity: 0.9;
+      }
+      .search-box {
+        flex: 1;
+        max-width: 400px;
+        height: 32px;
+        border: 1px solid #a2a9b1;
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+        font-size: 13px;
+        color: #72777d;
+        background: #fff
+          url("https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Search_Icon.svg/20px-Search_Icon.svg.png")
+          no-repeat 96% center;
+      }
+      .user-menu {
+        margin-left: auto;
+        font-size: 12px;
+        font-weight: bold;
+        color: var(--text-color);
+        display: flex;
+        gap: 15px;
+      }
 
-        /* 위키백과 본문 스타일 재현 */
-        .mw-parser-output { font-size: 0.938rem; line-height: 1.6; }
-        .mw-parser-output h1, .firstHeading {
-            font-family: 'Linux Libertine', 'Georgia', serif;
-            font-size: 1.8rem;
-            border-bottom: 1px solid #a2a9b1;
-            margin-bottom: 0.25em; padding-bottom: 0.25em;
-            font-weight: 400;
-        }
-        .mw-parser-output h2 {
-            font-family: 'Linux Libertine', serif;
-            font-size: 1.5rem;
-            border-bottom: 1px solid #eaecf0;
-            margin-top: 1em; margin-bottom: 0.5em;
-            font-weight: 400;
-        }
-        .siteSub { font-size: 0.8rem; color: #54595d; margin-bottom: 1.5em; }
-        
-        /* 인포박스(오른쪽 표) 스타일 강제 적용 */
-        table.infobox {
-            border: 1px solid #a2a9b1;
-            background-color: #f8f9fa;
-            color: black;
-            margin: 0.5em 0 0.5em 1em;
-            padding: 0.2em;
-            float: right;
-            clear: right;
-            font-size: 88%;
-            line-height: 1.5em;
-            width: 22em;
-        }
-        
-        /* 이미지 스타일 */
-        .mw-parser-output img { max-width: 100%; height: auto; }
-        .thumb { margin-bottom: .5em; width: auto; background-color: transparent; }
-        .thumb.tright { float: right; clear: right; margin: .5em 0 1.3em 1.4em; }
-        .thumbinner { border: 1px solid #c8ccd1; padding: 3px; background-color: #f8f9fa; font-size: 94%; text-align: center; overflow: hidden; }
+      #static-wrapper {
+        position: relative;
+        background: white;
+        z-index: 100;
+        min-height: 100vh;
+        margin-top: var(--header-height);
+      }
 
-        /* --- 4. 무한 유니버스 (숨겨짐) --- */
-        #universe {
-            display: none; /* JS로 활성화 */
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: white;
-            z-index: 100;
-            overflow: hidden;
-        }
+      /* 바디 컨테이너 */
+      .wiki-body-container {
+        display: grid;
+        grid-template-columns: var(--sidebar-width) 1fr var(--tools-width);
+        min-height: calc(100vh - var(--header-height));
+      }
 
-        #world {
-            position: absolute;
-            top: 50%; left: 50%;
-            /* transform 설정은 JS에서 */
-        }
+      /* 사이드바 */
+      .vector-sidebar {
+        background: var(--gray-bg);
+        padding: 24px 16px;
+        border-right: 1px solid #eaecf0;
+        font-size: 0.875rem;
+        height: 100%;
+        box-sizing: border-box;
+      }
 
-        /* --- 5. 무한 타일 (Full Page Replica) --- */
-        .infinite-tile {
-            position: absolute;
-            width: 1000px; /* PC 화면 너비 */
-            height: 1200px; /* 긴 문서 */
-            background: white;
-            
-            /* 실제 레이아웃 구조 */
-            display: grid;
-            grid-template-columns: var(--sidebar-width) 1fr; /* 사이드바 | 본문 */
-            
-            /* 딱 붙어있는 면 (경계선 없음/미세함) */
-            outline: 1px solid #f0f0f0;
-            overflow: hidden; /* 내용 넘침 숨김 */
-            
-            opacity: 0;
-            animation: fadeIn 1s forwards;
-        }
+      .nav-title {
+        color: #54595d;
+        font-size: 0.75rem;
+        font-weight: bold;
+        margin: 20px 0 10px 0;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #eaecf0;
+        display: block;
+      }
+      .nav-item {
+        display: block;
+        padding: 6px 0;
+        color: var(--link-color);
+        cursor: pointer;
+        line-height: 1.3;
+      }
+      .nav-item:hover {
+        text-decoration: underline;
+      }
+      .nav-item.selected {
+        color: #202122;
+        font-weight: bold;
+        padding-left: 8px;
+        margin-left: -10px;
+        border-left: 2px solid #202122;
+      }
+      .nav-text {
+        color: #202122;
+        font-size: 0.85em;
+        margin-top: 5px;
+      }
 
-        @keyframes fadeIn { to { opacity: 1; } }
+      /* 무한 모드 사이드바 */
+      #infinite-sidebar-container {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: var(--sidebar-width);
+        z-index: 3000;
+        background: var(--gray-bg);
+        border-right: 1px solid #eaecf0;
+        padding-top: 20px;
+      }
 
-        /* 타일 내부 사이드바 */
-        .tile-sidebar {
-            background: #f8f9fa;
-            padding: 15px;
-            border-right: 1px solid #eaecf0;
-        }
-        .mini-logo {
-            width: 100px; height: 100px;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg') no-repeat center;
-            background-size: contain;
-            margin: 0 auto 20px auto;
-            opacity: 0.7;
-        }
-        
-        /* 타일 내부 본문 */
-        .tile-content {
-            padding: 30px;
-            background: white;
-            position: relative;
-        }
+      /* 본문 */
+      .main-content {
+        padding: 30px 40px;
+        background: white;
+        max-width: 960px;
+      }
+      .sidebar-right {
+        border-left: 1px solid #eaecf0;
+        padding: 20px 10px;
+      }
 
-        /* 로딩 스피너 */
-        .loading {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #ccc; font-style: italic;
-        }
+      /* 타이포그래피 */
+      .firstHeading {
+        font-family: "Linux Libertine", serif;
+        font-size: 1.8rem;
+        border-bottom: 1px solid #a2a9b1;
+        padding-bottom: 7px;
+        margin-bottom: 15px;
+        font-weight: 400;
+      }
+      .siteSub {
+        font-size: 0.8rem;
+        color: #54595d;
+        margin-bottom: 1.5em;
+        display: block;
+      }
+      .mw-parser-output {
+        font-size: 0.938rem;
+        line-height: 1.6;
+      }
+      .mw-parser-output h2 {
+        font-family: "Linux Libertine", serif;
+        font-size: 1.5rem;
+        border-bottom: 1px solid #eaecf0;
+        padding-bottom: 5px;
+        margin-top: 1.5em;
+        margin-bottom: 0.6em;
+        font-weight: 400;
+      }
+      .infobox {
+        border: 1px solid #a2a9b1;
+        background-color: #f8f9fa;
+        margin: 0.5em 0 0.5em 1em;
+        padding: 0.2em;
+        float: right;
+        width: 22em;
+        font-size: 88%;
+      }
 
-        /* 바닥 감지 센서 */
-        #scroll-trigger { height: 10px; margin-top: 100px; }
+      #trigger-line {
+        height: 10px;
+        width: 100%;
+        margin-top: 150px;
+      }
 
+      /* --- 무한 유니버스 --- */
+      #universe {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #ffffff;
+        display: none;
+        overflow: hidden;
+        z-index: 900;
+      }
+      #world {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+      }
+
+      .infinite-tile {
+        position: absolute;
+        width: 1100px;
+        height: 1200px;
+        background: white;
+        outline: 1px solid #f0f0f0;
+        overflow: hidden;
+        transform: translate(-50%, -50%);
+      }
+      .tile-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #ccc;
+        font-style: italic;
+      }
+
+      /* 상단 탭 스타일 */
+      .wiki-tabs {
+        display: flex;
+        border-bottom: 1px solid #a2a9b1;
+        margin-bottom: 20px;
+        align-items: flex-end;
+        height: 30px;
+      }
+      .tab-left {
+        padding: 7px 15px;
+        border: 1px solid #a2a9b1;
+        border-bottom: 1px solid white;
+        background: white;
+        font-weight: bold;
+        margin-bottom: -1px;
+        font-size: 13px;
+        color: #202122;
+      }
+      .tab-right {
+        padding: 7px 15px;
+        color: #3366cc;
+        font-size: 13px;
+        background: none;
+        border: none;
+      }
+      .tab-tools {
+        margin-left: auto;
+        display: flex;
+        gap: 15px;
+        font-size: 13px;
+        color: #3366cc;
+        align-items: center;
+      }
+
+      /* 배경 비디오 오버레이 스타일 */
+      #blueprint-video {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 2500;
+
+        opacity: 0; /* 처음엔 안 보임 */
+        mix-blend-mode: multiply;
+        pointer-events: none;
+        display: none;
+
+        /* [유지] 5초 동안 서서히 나타남 */
+        transition: opacity 5s ease;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <video
+      id="blueprint-video"
+      src="blueprint.mp4"
+      loop
+      muted
+      playsinline
+      preload="auto"
+    ></video>
 
-    <div class="vector-sidebar">
-        <a href="#" class="wiki-logo"></a>
-        <div class="nav-item">대문</div>
-        <div class="nav-item">특수 문서</div>
-        <div class="nav-title">목차</div>
-        <div class="nav-item">1. 개요</div>
-        <div class="nav-item">2. 페렉의 공간</div>
-        <div class="nav-item">3. 확장</div>
+    <div class="wiki-header" id="global-header">
+      <div class="hb-menu"></div>
+      <div class="wiki-logo"></div>
+      <div class="search-box">위키백과 검색</div>
+      <div class="user-menu"><span>로그인</span></div>
     </div>
 
-    <div id="static-content">
-        <div class="mw-parser-output">
-            <h1 class="firstHeading">공간 (Space)</h1>
-            <div class="siteSub">위키백과, 우리 모두의 백과사전.</div>
-            
+    <div id="static-wrapper">
+      <div class="wiki-body-container">
+        <div class="vector-sidebar">
+          <div class="nav-title" style="margin-top: 0">목차</div>
+          <div class="nav-item selected">(처음)</div>
+          <div class="nav-item">1. 정의와 확장</div>
+          <div class="nav-item">2. 조르주 페렉</div>
+          <div class="nav-item">3. 무한의 건축학</div>
+          <div class="nav-item">4. 탐험 (Expansion)</div>
+        </div>
+
+        <div class="main-content">
+          <div class="wiki-tabs">
+            <div class="tab-left">문서</div>
+            <div class="tab-right">토론</div>
+            <div class="tab-tools">
+              <span style="color: #202122; font-weight: bold">읽기</span>
+              <span>편집</span>
+              <span>역사 보기</span>
+            </div>
+          </div>
+
+          <h1 class="firstHeading">공간 (Space)</h1>
+          <div class="siteSub">위키백과, 우리 모두의 백과사전.</div>
+
+          <div class="mw-parser-output">
             <table class="infobox">
-                <tbody>
-                    <tr><th colspan="2" style="text-align:center; background:#eaecf0; padding:10px;">공간 (Space)</th></tr>
-                    <tr><td colspan="2" style="text-align:center;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Gnomonic_projection_SW.jpg/440px-Gnomonic_projection_SW.jpg" style="width:200px;"></td></tr>
-                    <tr><th scope="row">분류</th><td>물리학, 철학, 웹</td></tr>
-                    <tr><th scope="row">확장성</th><td>무한함</td></tr>
-                    <tr><th scope="row">주요 저자</th><td>조르주 페렉</td></tr>
-                </tbody>
+              <tbody>
+                <tr>
+                  <th
+                    colspan="2"
+                    style="
+                      background: #eaecf0;
+                      padding: 5px;
+                      font-size: 120%;
+                      text-align: center;
+                    "
+                  >
+                    공간 (Space)
+                  </th>
+                </tr>
+                <tr>
+                  <td colspan="2" style="text-align: center; padding: 15px">
+                    <div
+                      style="
+                        width: 100px;
+                        height: 100px;
+                        background: #ddd;
+                        border-radius: 50%;
+                        margin: 0 auto;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #555;
+                        font-size: 12px;
+                      "
+                    >
+                      VOID
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">상태</th>
+                  <td>무한 확장 중 (Expanding)</td>
+                </tr>
+                <tr>
+                  <th scope="row">위치</th>
+                  <td>World Wide Web</td>
+                </tr>
+                <tr>
+                  <th scope="row">용량</th>
+                  <td>∞ TB</td>
+                </tr>
+              </tbody>
             </table>
 
-            <p><b>공간</b>(空間)은 물리적 실체가 있거나 어떤 일이 일어날 수 있는 장소이다. 그러나 정보화 시대의 공간은 <a href="#">웹(Web)</a>이라는 가상 영역으로 확장되었다.</p>
-            <p>이곳에서 공간은 고정되어 있지 않으며, 사용자의 상호작용에 따라 무한히 생성되고 소멸한다.</p>
+            <p>
+              <b>공간</b>(空間, 영어: Space)은 물리적 실체가 존재하거나 사건이
+              발생할 수 있는 장소이다. 그러나 21세기 디지털 혁명 이후, 공간의
+              정의는 물리적 제약을 넘어 <a href="#">월드 와이드 웹</a>이라는
+              거대한 비물질적 차원으로 전이되었다.
+            </p>
 
-            <h2>공간의 종류들</h2>
-            <p><b>조르주 페렉</b>은 그의 책 《공간의 종류들》에서 공간을 다음과 같이 분류했다.</p>
-            <ul>
-                <li><b>페이지:</b> 시선이 머무는 곳.</li>
-                <li><b>침대:</b> 육체가 머무는 곳.</li>
-                <li><b>방:</b> 삶이 거주하는 곳.</li>
-            </ul>
+            <p>
+              현대인은 깨어있는 시간의 대부분을 이
+              <b>'스크린 너머의 공간'</b>에서 보낸다. 우리는 매일같이 접속하는
+              이 웹 페이지들을 고정된 정보의 조각이라 여기지만, 그 실체는 0과
+              1로 이루어진 끝없는 데이터의 흐름이자 거대한 건축물이다.
+            </p>
 
-            <h2>탐험 가이드</h2>
-            <p>이 문서는 끝이 없습니다. 스크롤을 끝까지 내려 <b>경계</b>를 넘어보세요. 페이지라는 물리적 제약이 사라지고 정보의 바다가 펼쳐집니다.</p>
+            <h2>조르주 페렉의 공간들</h2>
+            <p>
+              프랑스의 작가 <b>조르주 페렉</b>(Georges Perec)은 그의 저서
+              《공간의 종류들》에서 공간을 다음과 같이 정의했다.
+            </p>
+            <blockquote
+              style="
+                background: #f8f9fa;
+                border-left: 4px solid #eaecf0;
+                padding: 10px 15px;
+                font-style: italic;
+                font-size: 0.95em;
+              "
+            >
+              "공간은 하나의 의심이다: 나는 끊임없이 그곳을 표시하고 지정해야
+              한다. 공간은 결코 내 것이 아니며, 한 번도 내게 주어진 적이 없지만,
+              나는 그곳을 정복해야만 한다."
+              <br /><br />
+              <span style="font-size: 0.85em; color: #777"
+                >(L’espace est un doute : il me faut sans cesse le marquer, le
+                désigner ; il n’est jamais à moi, il ne m’est jamais donné, il
+                faut que je le conquière.)</span
+              >
+            </blockquote>
+            <p>
+              그에게 있어 공간은 고정된 실체가 아니라, 끊임없이 질문하고
+              탐구하며 채워 나가야 할 '가능성의 영역'이었다.
+            </p>
 
-            <div style="height: 400px;"></div>
-            <p style="text-align:center; color:#999;">경계선에 접근 중...</p>
-            <div style="height: 100px;"></div>
-            
-            <div id="scroll-trigger"></div>
+            <h2>무한의 건축학 (Infinite Architecture)</h2>
+            <p>
+              이 웹 프로젝트는 페렉의 공간론을 디지털 우주로 확장하려는
+              시도이다. 웹(Web)은 물리적 한계가 없는 무한한 캔버스이며, 지금 이
+              순간에도 전 세계의 데이터가 모여
+              <b>끝없이 지어지고 있는 비물질적 건축 현장</b>이다.
+            </p>
+
+            <div
+              style="
+                background: #f8f9fa;
+                border-left: 5px solid #3366cc;
+                padding: 15px;
+                margin: 20px 0;
+              "
+            >
+              <b>👁‍🗨 프로젝트 선언:</b><br />
+              이곳은 고정된 문서가 아닙니다. 스크롤을 끝까지 내리는 순간, 당신은
+              <b>무한히 증식하는 데이터의 우주</b>를 목격하게 될 것입니다.
+            </div>
+
+            <h2>탐험 (Expansion)</h2>
+            <p>
+              준비가 되었다면, 아래로 내려가십시오. 스크롤을 끝까지 내리면
+              확장이 시작됩니다.
+            </p>
+
+            <div style="height: 350px"></div>
+            <p style="text-align: center; color: #999; font-style: italic">
+              Initializing Infinite Sequence...
+            </p>
+            <div style="height: 100px"></div>
+
+            <div id="trigger-line"></div>
+          </div>
         </div>
+
+        <div class="sidebar-right"></div>
+      </div>
+    </div>
+
+    <div id="infinite-sidebar-container" class="vector-sidebar">
+      <div
+        class="wiki-logo"
+        style="margin-left: -15px; margin-bottom: 20px"
+      ></div>
+
+      <div class="nav-title" style="margin-top: 0"></div>
+      <div
+        class="nav-item selected"
+        style="cursor: default; border: none; padding-left: 0; margin-left: 0"
+      >
+        경과 시간
+      </div>
+      <div
+        class="nav-text"
+        id="timer-display"
+        style="
+          font-weight: bold;
+          color: #202122;
+          font-size: 1.1em;
+          margin-bottom: 15px;
+        "
+      >
+        00:00:00
+      </div>
+
+      <div
+        class="nav-item selected"
+        style="cursor: default; border: none; padding-left: 0; margin-left: 0"
+      >
+        상태
+      </div>
+      <div class="nav-text">
+        데이터 증식 중...<br />
+        좌표계 생성 중...
+      </div>
+
+      <div class="nav-title">도구</div>
+      <div class="nav-item" onclick="location.reload();">대문으로 돌아가기</div>
+      <div class="nav-item">고유 링크</div>
+      <div class="nav-item">문서 정보</div>
+
+      <div class="nav-title">다른 언어</div>
+      <div class="nav-item">English</div>
+      <div class="nav-item">Français</div>
+      <div class="nav-item">Deutsch</div>
     </div>
 
     <div id="universe">
-        <div id="world"></div>
+      <div id="world"></div>
     </div>
 
     <script>
-        // --- 설정 ---
-        const TILE_W = 1000;
-        const TILE_H = 1200;
-        const SIDEBAR_W = 176;
+      // --- 설정 ---
+      const DURATION_MS = 180000; // 3분
+      const TILE_W = 1100;
+      const TILE_H = 1200;
 
-        let isInfinite = false;
-        let scale = 1;
-        let panX = 0, panY = 0;
-        
-        // 나선형 좌표 변수
-        let gx = 0, gy = 0, gdx = 0, gdy = -1, iter = 0;
+      let isInfinite = false;
+      let scale = 1.0;
+      let startTime = 0;
+      let gx = 0,
+        gy = 0,
+        gdx = 0,
+        gdy = -1,
+        iter = 0;
 
-        // --- 바닥 감지 (IntersectionObserver) ---
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && !isInfinite) {
-                    startInfiniteMode();
-                }
-            });
-        }, { threshold: 0.1 });
-        observer.observe(document.getElementById('scroll-trigger'));
+      const loadingPhrases = [
+        "데이터베이스 접속 중...",
+        "좌표 [Null] 생성 중...",
+        "하이퍼링크 연결 중...",
+        "새로운 차원 확장 중...",
+        "아카이브 해독 중...",
+        "외부 데이터 수신 중...",
+        "경계면 렌더링 중...",
+        "메타데이터 분석 중...",
+      ];
 
-        // --- 무한 모드 시작 ---
-        function startInfiniteMode() {
-            isInfinite = true;
-            document.body.style.overflow = 'hidden'; // 스크롤 잠금
-
-            const staticWrap = document.getElementById('static-content');
-            const universe = document.getElementById('universe');
-            const world = document.getElementById('world');
-            
-            // 기존 화면을 복사해서 Origin 타일로 만듦 (자연스러운 전환)
-            const originHTML = staticWrap.innerHTML;
-            staticWrap.style.display = 'none';
-            universe.style.display = 'block';
-
-            // 유니버스 위치 보정 (사이드바 옆으로)
-            universe.style.left = SIDEBAR_W + 'px';
-            universe.style.width = `calc(100vw - ${SIDEBAR_W}px)`;
-
-            // 카메라 중앙 정렬
-            panX = (window.innerWidth - SIDEBAR_W) / 2 - (TILE_W / 2);
-            panY = window.innerHeight / 2 - (TILE_H / 2);
-            updateView();
-
-            // 1. Origin 타일 생성
-            createFullTile(0, 0, originHTML, true);
-
-            // 2. 줌아웃 & 생성 루프 시작
-            setTimeout(() => {
-                let zoomInt = setInterval(() => {
-                    if (scale > 0.25) { scale *= 0.99; updateView(); }
-                    else clearInterval(zoomInt);
-                }, 20);
-
-                setInterval(expandSurface, 200); // 0.2초마다 타일 생성
-            }, 100);
-        }
-
-        // --- 표면 확장 (Rectangular Spiral) ---
-        function expandSurface() {
-            if (gx === gy || (gx < 0 && gx === -gy) || (gx > 0 && gx === 1 - gy)) {
-                let t = gdx; gdx = -gdy; gdy = t;
+      // 1. 바닥 감지
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !isInfinite) {
+              startInfiniteMode();
             }
-            gx += gdx; gy += gdy;
+          });
+        },
+        { threshold: 0.1 }
+      );
+      observer.observe(document.getElementById("trigger-line"));
 
-            // 좌표에 딱 붙여서 배치
-            createApiTile(gx * TILE_W, gy * TILE_H, iter);
-            iter++;
+      // 2. 무한 모드 시작
+      function startInfiniteMode() {
+        isInfinite = true;
+        document.body.style.overflow = "hidden";
+
+        const staticWrap = document.getElementById("static-wrapper");
+        const universe = document.getElementById("universe");
+        const infiniteSidebar = document.getElementById(
+          "infinite-sidebar-container"
+        );
+
+        // 상단 헤더 숨기기
+        const header = document.getElementById("global-header");
+        if (header) header.style.display = "none";
+
+        const originHTML = staticWrap.innerHTML;
+        staticWrap.style.display = "none";
+        universe.style.display = "block";
+        infiniteSidebar.style.display = "block";
+
+        // 비디오 설정 및 5초(5000ms) 지연 등장
+        const video = document.getElementById("blueprint-video");
+        if (video) {
+          video.style.display = "block";
+          video.play();
+
+          // 5초 후에 투명도를 0.7로 변경하여 서서히 나타나게 함
+          setTimeout(() => {
+            video.style.opacity = "0.7";
+          }, 5000);
         }
 
-        // --- API 타일 생성 (핵심: action=parse) ---
-        async function createApiTile(x, y, index) {
-            const world = document.getElementById('world');
-            
-            // 타일 틀 생성
-            const tile = document.createElement('div');
-            tile.className = 'infinite-tile';
-            tile.style.left = x + 'px';
-            tile.style.top = y + 'px';
-            
-            // 내부 구조: 사이드바 + 본문(로딩중)
-            tile.innerHTML = `
-                <div class="tile-sidebar">
-                    <div class="mini-logo"></div>
-                    <div style="font-size:10px; color:#3366cc;">목차</div>
-                    <div style="font-size:10px; margin-top:5px;">Loading...</div>
-                </div>
-                <div class="tile-content">
-                    <div class="loading">위키백과 데이터 가져오는 중...</div>
+        createTile(0, 0, originHTML, true);
+
+        startTime = performance.now();
+        requestAnimationFrame(autoZoomLoop);
+
+        // [유지] 0.25초 (빠른 확장)
+        setInterval(expandSurface, 260);
+      }
+
+      // 3. 자동 줌아웃
+      function autoZoomLoop(currentTime) {
+        const elapsed = currentTime - startTime;
+        updateTimer(elapsed);
+
+        if (elapsed < DURATION_MS) {
+          // [유지] 0.9997 (천천히 줌아웃)
+          scale *= 0.99965;
+          const world = document.getElementById("world");
+          world.style.transform = `scale(${scale})`;
+          requestAnimationFrame(autoZoomLoop);
+        } else {
+          document.getElementById("timer-display").innerText =
+            "03:00:00 (완료)";
+        }
+      }
+
+      function updateTimer(ms) {
+        if (ms > DURATION_MS) ms = DURATION_MS;
+        const totalSeconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const centis = Math.floor((ms % 1000) / 10);
+        const mStr = String(minutes).padStart(2, "0");
+        const sStr = String(seconds).padStart(2, "0");
+        const cStr = String(centis).padStart(2, "0");
+        document.getElementById(
+          "timer-display"
+        ).innerText = `${mStr}:${sStr}:${cStr}`;
+      }
+
+      // 4. 표면 확장
+      function expandSurface() {
+        if (gx === gy || (gx < 0 && gx === -gy) || (gx > 0 && gx === 1 - gy)) {
+          let t = gdx;
+          gdx = -gdy;
+          gdy = t;
+        }
+        gx += gdx;
+        gy += gdy;
+        createApiTile(gx * TILE_W, gy * TILE_H, iter);
+        iter++;
+      }
+
+      // 5. API 타일 생성
+      async function createApiTile(x, y, index) {
+        const world = document.getElementById("world");
+        const tile = document.createElement("div");
+        tile.className = "infinite-tile";
+        tile.style.left = x + "px";
+        tile.style.top = y + "px";
+
+        const randomMsg =
+          loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)];
+
+        // 상단바 삭제됨. 사이드바만 존재.
+        tile.innerHTML = `
+                <div class="wiki-ui" style="height:100%;">
+                    <div class="wiki-body-container" style="height:100%; box-sizing: border-box; margin:0; padding:0;">
+                        <div class="vector-sidebar">
+                            <div class="nav-title" style="margin-top:0;">목차</div>
+                            <div class="nav-item">1. 개요</div>
+                            <div class="nav-item">2. 상세</div>
+                            <div class="nav-item">3. 역사</div>
+                        </div>
+                        <div class="main-content">
+                            <div class="wiki-tabs">
+                                <div class="tab-left">문서</div>
+                                <div class="tab-right">토론</div>
+                                <div class="tab-tools">
+                                    <span style="color:#202122; font-weight:bold;">읽기</span>
+                                    <span>편집</span>
+                                    <span>역사 보기</span>
+                                </div>
+                            </div>
+                            <div class="content-body">
+                                <div class="tile-loading">${randomMsg}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
-            world.appendChild(tile);
+        world.appendChild(tile);
 
-            try {
-                // 주제 리스트
-                const topics = ["건축", "도시", "방", "집", "도서관", "미로", "우주", "시간", "기억", "지도", "인터넷", "데이터", "알고리즘", "인공지능", "프랙탈", "블랙홀"];
-                let keyword = topics[index % topics.length];
-                
-                // 1. 랜덤하게 주제 선택 or 완전 랜덤 문서
-                let apiUrl;
-                if (index < topics.length * 2) {
-                     apiUrl = `https://ko.wikipedia.org/w/api.php?action=parse&format=json&origin=*&page=${encodeURIComponent(keyword)}&prop=text&mobileformat=html`;
-                } else {
-                     // 랜덤 문서 제목 먼저 가져오기
-                     const randRes = await fetch(`https://ko.wikipedia.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=1&format=json&origin=*`);
-                     const randData = await randRes.json();
-                     const randTitle = randData.query.random[0].title;
-                     apiUrl = `https://ko.wikipedia.org/w/api.php?action=parse&format=json&origin=*&page=${encodeURIComponent(randTitle)}&prop=text&mobileformat=html`;
-                }
+        try {
+          const topics = [
+            "건축",
+            "도시",
+            "방",
+            "집",
+            "도서관",
+            "미로",
+            "우주",
+            "시간",
+            "기억",
+            "지도",
+            "인터넷",
+            "데이터",
+            "프랙탈",
+            "블랙홀",
+            "은하",
+            "심리학",
+            "철학",
+            "역사",
+            "문학",
+            "예술",
+          ];
+          let keyword = topics[index % topics.length];
+          let apiUrl;
 
-                // 2. HTML 원본 가져오기 (action=parse)
-                const res = await fetch(apiUrl);
-                const data = await res.json();
-                
-                if (data.parse && data.parse.text) {
-                    const htmlContent = data.parse.text['*'];
-                    const title = data.parse.title;
-                    
-                    // 3. HTML 주입 및 링크 무력화
-                    fillTileHTML(tile, title, htmlContent);
-                }
+          if (index < topics.length * 2) {
+            apiUrl = `https://ko.wikipedia.org/w/api.php?action=parse&format=json&origin=*&page=${encodeURIComponent(
+              keyword
+            )}&prop=text&mobileformat=html`;
+          } else {
+            const rRes = await fetch(
+              `https://ko.wikipedia.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=1&format=json&origin=*`
+            );
+            const rData = await rRes.json();
+            apiUrl = `https://ko.wikipedia.org/w/api.php?action=parse&format=json&origin=*&page=${encodeURIComponent(
+              rData.query.random[0].title
+            )}&prop=text&mobileformat=html`;
+          }
 
-            } catch (e) {
-                console.error(e);
-                tile.querySelector('.tile-content').innerHTML = "<p>데이터 로드 실패 (너무 먼 우주입니다)</p>";
-            }
-        }
+          const res = await fetch(apiUrl);
+          const data = await res.json();
+          if (data.parse && data.parse.text)
+            fillTile(tile, data.parse.title, data.parse.text["*"]);
+        } catch (e) {}
+      }
 
-        function fillTileHTML(tileElem, title, html) {
-            const contentDiv = tileElem.querySelector('.tile-content');
-            
-            // HTML 세탁 (이미지 경로 수정 등)
-            // 위키백과 이미지는 //upload... 로 시작하므로 https: 를 붙여줌
-            let safeHtml = html.replace(/src="\/\//g, 'src="https://');
-            
-            // 링크 클릭 시 이동 방지 (href -> #)
-            safeHtml = safeHtml.replace(/href="\//g, 'href="#');
+      function fillTile(tile, title, html) {
+        let safeHtml = html
+          .replace(/src="\/\//g, 'src="https://')
+          .replace(/href="\//g, 'href="#');
 
-            contentDiv.innerHTML = `
+        const contentBody = tile.querySelector(".content-body");
+
+        if (contentBody) {
+          contentBody.innerHTML = `
                 <h1 class="firstHeading">${title}</h1>
                 <div class="siteSub">위키백과, 우리 모두의 백과사전.</div>
-                <div class="mw-parser-output">
-                    ${safeHtml}
-                </div>
+                <div class="mw-parser-output">${safeHtml}</div>
             `;
-            
-            // 너무 긴 내용은 잘라내기 (성능 최적화)
-            // overflow: hidden이 되어있지만, DOM이 너무 무거우면 렉걸림
         }
+      }
 
-        // Origin 타일 생성 (하드코딩된 HTML 사용)
-        function createFullTile(x, y, content, isOrigin) {
-            const world = document.getElementById('world');
-            const tile = document.createElement('div');
-            tile.className = 'infinite-tile';
-            tile.style.left = x + 'px';
-            tile.style.top = y + 'px';
-            if (isOrigin) tile.style.zIndex = 10;
-
-            tile.innerHTML = `
-                <div class="tile-sidebar">
-                    <div class="mini-logo"></div>
-                    <div style="font-size:10px; color:#3366cc;">목차</div>
-                    <div style="font-size:10px;">1. 개요</div>
-                    <div style="font-size:10px;">2. 확장</div>
-                </div>
-                <div class="tile-content">
-                    ${content}
-                </div>
-            `;
-            // Origin 내부의 바닥 센서 제거
-            const sensor = tile.querySelector('#scroll-trigger');
-            if(sensor) sensor.remove();
-
-            world.appendChild(tile);
-        }
-
-        // --- 뷰 컨트롤 ---
-        window.addEventListener('wheel', (e) => {
-            if (!isInfinite) return;
-            e.preventDefault();
-            const newScale = scale - (e.deltaY * 0.0005);
-            if (newScale > 0.02 && newScale < 2) {
-                scale = newScale;
-                updateView();
-            }
-        }, { passive: false });
-
-        let isDrag = false, sx, sy;
-        const uni = document.getElementById('universe');
-        uni.addEventListener('mousedown', e => { if(isInfinite){ isDrag=true; sx=e.clientX-panX; sy=e.clientY-panY; }});
-        window.addEventListener('mousemove', e => { if(isDrag){ e.preventDefault(); panX=e.clientX-sx; panY=e.clientY-sy; updateView(); }});
-        window.addEventListener('mouseup', () => isDrag=false);
-
-        function updateView() {
-            document.getElementById('world').style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-        }
+      function createTile(x, y, html, isOrigin) {
+        const world = document.getElementById("world");
+        const tile = document.createElement("div");
+        tile.className = "infinite-tile";
+        tile.style.left = x + "px";
+        tile.style.top = y + "px";
+        if (isOrigin) tile.style.zIndex = 10;
+        tile.innerHTML = html;
+        const sensor = tile.querySelector("#trigger-line");
+        if (sensor) sensor.remove();
+        world.appendChild(tile);
+      }
     </script>
-</body>
+  </body>
 </html>
